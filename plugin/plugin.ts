@@ -17,9 +17,7 @@ function compileInput(input, options, build) {
   } : options.building ? (text) => console.log(`${c.cyan(c.bold("mjml"))} - ${text}`) : (text) => options.logger.info(text, { timestamp: true });
   const content = fs.readFileSync(input, "utf-8");
   try {
-    if (build) {
-      fsExtra.emptyDirSync(path.dirname(options.output));
-    }
+    build && fsExtra.emptyDirSync(options.output);
 
     const result = mjml(content, options.mjml);
 
@@ -66,7 +64,7 @@ function plugin(options = {}) {
       fs.readdirSync(input).forEach(file => {
         if(path.extname(file) === '.mjml') {
           let passAbs = path.resolve(input, file);
-          compileInput(passAbs, compileOptions, true)
+          passAbs && compileInput(passAbs, compileOptions, true)
         }
       });
 		},
@@ -76,7 +74,8 @@ function plugin(options = {}) {
       if (compileOptions.watch === false) {
         debug.watch("Watching disabled.");
         return; 
-      } 
+      }
+      
       function handleReload(path2) {        
         if (path.extname(path2) === '.mjml' && path2.includes(path.normalize(compileOptions.input))) {
           debug.watch(`${path2} changed, compiling`);
